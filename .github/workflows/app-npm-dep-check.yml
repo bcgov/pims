@@ -84,3 +84,23 @@ jobs:
           PATH_TO_PACKAGE_JSON: ${{ env.PATH_TO_PACKAGE_JSON }}
         run: |
           node .github/helpers/github-api/create-and-close-existing-issue.js
+
+  create-tickets:
+    needs: check-versions
+    runs-on: ubuntu-latest
+    steps:
+
+      # Checkout branch
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Setup Python
+      - name: setup python      
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11' # current Python version
+
+      - name: execute py script
+        env: 
+          JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
+        run: python3 scripts/create_tickets.py
