@@ -89,6 +89,23 @@ jobs:
     needs: check-versions
     runs-on: ubuntu-latest
     steps:
+      # Download the output artifact.
+      - name: Download output
+        uses: actions/download-artifact@v3
+        with:
+          name: output
+          path: .
+
+      # Encode and set ISSUE_BODY env.
+      - name: Set ISSUE_BODY env
+        shell: bash
+        run: |
+          OUTPUT=$(cat output.txt)
+          OUTPUT="${OUTPUT//'%'/'%25'}"
+          OUTPUT="${OUTPUT//$'\n'/'%0A'}"
+          OUTPUT="${OUTPUT//$'\r'/'%0D'}"
+          echo "ISSUE_BODY=${OUTPUT}" >> $GITHUB_ENV
+
       # Checkout branch
       - name: Checkout repository
         uses: actions/checkout@v3
