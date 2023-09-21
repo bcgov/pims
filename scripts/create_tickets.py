@@ -34,7 +34,6 @@ def exit_with_error(error_message, data, res):
     reason = res.reason
     # finalize log message and exit
     message = error_message + " " + status + " " + reason + "\n" + data
-    print(message)
     sys.exit(message)
 
 def parse_tickets(tickets_json):
@@ -146,14 +145,14 @@ def parse_dependencies(dep_text):
     # return list containing all dependency updates
     return dep_li
 
-def get_dependency_list():
+def get_dependency_list(dep_in):
     """
     TODO: get list from api call
     """
 
     dep_li = []
     dep_in = ""
-    with open('dependency_list.txt', 'r', encoding="utf-8") as txt_in:
+    with open(dep_in, 'r', encoding="utf-8") as txt_in:
         dep_in = txt_in.read()
     dep_li = parse_dependencies(dep_in)
     return dep_li
@@ -331,23 +330,27 @@ def main():
     JIRA. 
     """
 
+    if len(sys.argv) != 2:
+        sys.exit("No argument given.")
+    dep_in = sys.argv[1]
+
     try:
-        #JIRA_API_KEY = os.environ["JIRA_API_KEY"]
-        JIRA_API_KEY = 'dGF5bG9yLmZyaWVzZW5AZ292LmJjLmNhOkFUQVRUM3hGZkdGMG01V044NWYwa0NwV29SRTRmRjA0b0ltZjBsX050a1lWcnc0VzN3UHhEM0FwNDJUbjBVc0t1ZlJ5Zk9XcTdJd0M3SlpKQ1JWeDZUS1NjblFwcTNVcUhSYlZXY2RGTEFsY1N4bnJ6YjV6WGJFRGNvOWVwZTJsb19oRkVhQ0pxR3gwWUs1Zkp5aHRSOC1WMjQyd2k5VFpYZ1o0ZEQ5VzBBY01pSWxRc2hFRXI3ND01OTI5NTk4Qw=='
+        JIRA_API_KEY = os.environ["JIRA_API_KEY"]
     except KeyError:
         sys.exit("Unable to get JIRA_API_KEY")
+    
     conn = http.client.HTTPSConnection("citz-imb.atlassian.net")
     #auth_string = "Basic" + JIRA_API_KEY
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic dGF5bG9yLmZyaWVzZW5AZ292LmJjLmNhOkFUQVRUM3hGZkdGMG01V044NWYwa0NwV29SRTRmRjA0b0ltZjBsX050a1lWcnc0VzN3UHhEM0FwNDJUbjBVc0t1ZlJ5Zk9XcTdJd0M3SlpKQ1JWeDZUS1NjblFwcTNVcUhSYlZXY2RGTEFsY1N4bnJ6YjV6WGJFRGNvOWVwZTJsb19oRkVhQ0pxR3gwWUs1Zkp5aHRSOC1WMjQyd2k5VFpYZ1o0ZEQ5VzBBY01pSWxRc2hFRXI3ND01OTI5NTk4Qw=='
+        'Authorization': 'Basic ' + JIRA_API_KEY
     }
     project_key = "TEST"
 
     # get the list of summaries from JIRA
     summary_li = get_summary_list(conn, headers, project_key)
     # get the list of dependencies from GitHub
-    dependency_li = get_dependency_list()
+    dependency_li = get_dependency_list(dep_in)
 
     # check if dependency list is empty, if it is there are no tickets to create
     if len(dependency_li) == 0:
