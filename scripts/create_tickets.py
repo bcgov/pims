@@ -329,20 +329,21 @@ def main():
     JIRA. 
     """
 
-    if len(sys.argv) != 2:
-        sys.exit("No argument given.")
-    dep_in = sys.argv[1]
+    try:
+        dep_in = os.environ["ISSUE_BODY"]
+    except KeyError:
+        sys.exit("Unable to get ISSUE_BODY")
 
     try:
-        JIRA_API_KEY = os.environ["JIRA_API_KEY"]
+        jira_api_key = os.environ["JIRA_API_KEY"]
     except KeyError:
         sys.exit("Unable to get JIRA_API_KEY")
-    
+
     conn = http.client.HTTPSConnection("citz-imb.atlassian.net")
     #auth_string = "Basic" + JIRA_API_KEY
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + JIRA_API_KEY
+        'Authorization': 'Basic ' + jira_api_key
     }
     project_key = "TEST"
 
