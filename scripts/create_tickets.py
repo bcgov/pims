@@ -145,17 +145,6 @@ def parse_dependencies(dep_text):
     # return list containing all dependency updates
     return dep_li
 
-def get_dependency_list(dep_in):
-    """
-    TODO: get list from api call
-    """
-
-    dep_li = []
-    with open(dep_in, 'r', encoding="utf-8") as txt_in:
-        dep_in = txt_in.read()
-    dep_li = parse_dependencies(dep_in)
-    return dep_li
-
 def remove_duplicates(in_dep, in_sum):
     """
     Goes through the dependency list, checks to see if the dependency listed 
@@ -350,7 +339,7 @@ def main():
     # get the list of summaries from JIRA
     summary_li = get_summary_list(conn, headers, project_key)
     # get the list of dependencies from GitHub
-    dependency_li = get_dependency_list(dep_in)
+    dependency_li = parse_dependencies(dep_in)
 
     # check if dependency list is empty, if it is there are no tickets to create
     if len(dependency_li) == 0:
