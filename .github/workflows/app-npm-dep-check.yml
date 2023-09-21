@@ -104,5 +104,4 @@ jobs:
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
           ISSUE_BODY: ${{ env.ISSUE_BODY }}
         run: |
-          OUTPUT=$(cat output.txt)
           python3 scripts/create_tickets.py ${ISSUE_BODY}
