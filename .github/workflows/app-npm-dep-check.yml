@@ -84,7 +84,7 @@ jobs:
           PATH_TO_PACKAGE_JSON: ${{ env.PATH_TO_PACKAGE_JSON }}
         run: |
           node .github/helpers/github-api/create-and-close-existing-issue.js
-
+           
   create-tickets:
     needs: check-versions
     runs-on: ubuntu-latest
