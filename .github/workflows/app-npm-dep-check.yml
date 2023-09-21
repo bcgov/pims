@@ -93,7 +93,7 @@ jobs:
       - name: Download output
         uses: actions/download-artifact@v3
         with:
-          name: output.txt
+          name: output
           path: .
 
       # Checkout branch
@@ -109,4 +109,6 @@ jobs:
       - name: execute py script
         env: 
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
-        run: python3 scripts/create_tickets.py ./output.txt
+        run: |
+          OUTPUT=$(cat output.txt)
+          python3 scripts/create_tickets.py ${OUTPUT}
