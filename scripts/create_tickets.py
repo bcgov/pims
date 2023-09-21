@@ -124,6 +124,8 @@ def parse_dependencies(dep_text):
       dep_li (list): list with string elements of dependency updates
     """
 
+    print(dep_text)
+    print(type(dep_text))
     dep_li = []
     # find the first match to  minor in the depencency list
     match = re.search('minor', dep_text)
@@ -343,7 +345,7 @@ def main():
 
     # check if dependency list is empty, if it is there are no tickets to create
     if len(dependency_li) == 0:
-        sys.exit("No tickets or no dependencies")
+        sys.exit("No dependencies")
 
     # remove any dependencies that exist in both lists
     final_li = remove_duplicates(dependency_li, summary_li)
