@@ -3,6 +3,7 @@ Modules providing HTTP connections, json formatting,
 regex, operating system, and system operations
 """
 import http.client
+import urllib.parse
 import json
 import re
 import sys
@@ -124,8 +125,6 @@ def parse_dependencies(dep_text):
       dep_li (list): list with string elements of dependency updates
     """
 
-    print(dep_text)
-    print(type(dep_text))
     dep_li = []
     # find the first match to  minor in the depencency list
     match = re.search('minor', dep_text)
@@ -313,6 +312,11 @@ def create_tickets(conn, headers, update_list, project_key):
         error_message = "Error Posting JIRA sub-tickets. Client sent back: "
         exit_with_error(error_message, data, res)
 
+def decode_github_env(encoded_str):
+    decoded_str = encoded_str.replace('%25', '%')
+    decoded_str = decoded_str.replace('%0A', '\n')
+    decoded_str = decoded_str.replace('%0D', '\r')
+    return decoded_str
 
 def main():
     """
@@ -324,6 +328,8 @@ def main():
         dep_in = os.environ["ISSUE_BODY"]
     except KeyError:
         sys.exit("Unable to get ISSUE_BODY")
+
+    dep_in = decode_github_env(dep_in)
 
     try:
         jira_api_key = os.environ["JIRA_API_KEY"]
