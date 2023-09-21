@@ -96,6 +96,13 @@ jobs:
           name: output
           path: .
 
+      # set ISSUE_BODY env.
+      - name: Set ISSUE_BODY env
+        shell: bash
+        run: |
+          OUTPUT=$(cat output.txt)
+          echo "ISSUE_BODY=${OUTPUT}" >> $GITHUB_ENV
+
       # Checkout branch
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -109,6 +116,7 @@ jobs:
       - name: execute py script
         env: 
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
+          ISSUE_BODY: ${{ env.ISSUE_BODY }}
         run: |
           OUTPUT=$(cat output.txt)
-          python3 scripts/create_tickets.py ${OUTPUT}
+          python3 scripts/create_tickets.py ${ISSUE_BODY}
