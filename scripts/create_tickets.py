@@ -151,7 +151,6 @@ def get_dependency_list(dep_in):
     """
 
     dep_li = []
-    dep_in = ""
     with open(dep_in, 'r', encoding="utf-8") as txt_in:
         dep_in = txt_in.read()
     dep_li = parse_dependencies(dep_in)
