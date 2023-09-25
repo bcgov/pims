@@ -15,6 +15,9 @@ import os
 ##
 ## May want to add the following features in the future
 ##       Check for similar names like eslint/parser... vs eslint ect
+##       Env variable to hold create_subtasks value for issue id
+##        - has to be updated for each board depending on what version of subtasks they use
+##       Check max results vs. total results in get_summary_list
 ##
 ## **********************************************************************
 
@@ -66,7 +69,6 @@ def get_summary_list( conn, headers, project_key ):
     """
     Make an API POST request for current JIRA tickets narrowing down the search by a JQL 
     (JIRA Query Language) filter. Then sends response to be processed and returns processed list
-    TODO: check max results vs. total results 
 
     Args:
       conn (HTTPSConnection): specifies where to make the connection
