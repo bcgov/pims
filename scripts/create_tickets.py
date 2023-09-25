@@ -3,7 +3,6 @@ Modules providing HTTP connections, json formatting,
 regex, operating system, and system operations
 """
 import http.client
-import urllib.parse
 import json
 import re
 import sys
@@ -19,7 +18,7 @@ import os
 ##
 ## **********************************************************************
 
-def exit_with_error(error_message, data, res):
+def exit_with_error( error_message, data, res ):
     """
     Used to exit the program gracefully when hitting an error or getting 
     an invalid response 
@@ -31,13 +30,13 @@ def exit_with_error(error_message, data, res):
     """
 
     # get the status and reason from the response
-    status = str(res.status)
+    status = str( res.status )
     reason = res.reason
     # finalize log message and exit
     message = error_message + " " + status + " " + reason + "\n" + data
-    sys.exit(message)
+    sys.exit( message )
 
-def parse_tickets(tickets_json):
+def parse_tickets( tickets_json ):
     """
      Takes in previous JIRA tickets in json format
      pulls out the summary (title) and puts them into a list.
@@ -59,11 +58,11 @@ def parse_tickets(tickets_json):
         summary = issue['fields']['summary']
         # if the summary is not already in the list add it
         if summary not in summary_li:
-            summary_li.append(summary)
+            summary_li.append( summary )
     # return the list of summaries
     return summary_li
 
-def get_summary_list(conn, headers, project_key):
+def get_summary_list( conn, headers, project_key ):
     """
     Make an API POST request for current JIRA tickets narrowing down the search by a JQL 
     (JIRA Query Language) filter. Then sends response to be processed and returns processed list
@@ -83,6 +82,7 @@ def get_summary_list(conn, headers, project_key):
     jql_string = "project = " + project_key + " AND text ~ \"update\" AND status != Done"
     max_results = 100
 
+    # will be used as the requesting json for specific ticket matches
     payload = json.dumps({
         "expand": [
             "names"
@@ -96,22 +96,56 @@ def get_summary_list(conn, headers, project_key):
         "startAt": 0
     })
 
+    # send request
     conn.request( "POST", "/rest/api/3/search", payload, headers )
     res = conn.getresponse()
     data = res.read()
-    data = data.decode("utf-8")
+    data = data.decode( "utf-8" )
 
     # check if we get OK response. If not exit with message
     if res.status != 200:
         error_message = "Error Requesting JIRA tickets. "
-        exit_with_error(error_message, data, res)
+        exit_with_error( error_message, data, res )
 
     json_in = json.loads( data )
 
-    summary_li = parse_tickets(json_in)
+    summary_li = parse_tickets( json_in )
     return summary_li
 
-def parse_dependencies(dep_text):
+def remove_patch_dep( in_str ):
+    """
+    Used to parse through the incoming dependency update text and pull out the 
+    two patch update spots as we only want tickets for minor and major updates.
+
+    Args: 
+      in_str (string): string in from environment variable
+
+    Returns: 
+      final_str (string): string of dependency updates without any patch updates.
+    """
+
+    # find the first section of patch updates
+    start_patch = re.search( r'\[patch\]', in_str )
+    end_patch = re.search( r'\[patch\]:', in_str )
+
+    # quick maths and splicing to remove first patch section
+    first_removal = in_str[:start_patch.start()]
+    second_removal = in_str[end_patch.end():]
+    dep_str = first_removal + second_removal
+
+    # find the second patch of patch updates
+    start_patch = re.search( r'\[patch_dev\]', dep_str )
+    end_patch = re.search( r'\[patch_dev\]:', dep_str )
+
+    # more maths and splices to remove second patch section
+    first_removal = dep_str[:start_patch.start()]
+    second_removal = dep_str[end_patch.end():]
+    final_str = first_removal + second_removal
+    
+    return final_str
+
+
+def parse_dependencies( dep_text ):
     """
     This takes in a dependency update text (very specific format see 
     https://github.com/bcgov/PIMS/issues/1706#issue-1899122308)
@@ -126,27 +160,18 @@ def parse_dependencies(dep_text):
     """
 
     dep_li = []
-    # find the first match to  minor in the depencency list
-    match = re.search('minor', dep_text)
-    # if we cant find minor look for major
-    if match is None:
-        match = re.search('major', dep_text)
-        # if we cant find major there are no necessary updates.
-        if match is None:
-            # return the empty list
-            return dep_li
-    # splice the string to start from the end of the match to minor/major
-    dep_text = dep_text[match.end():]
+
+    dep_text = remove_patch_dep( dep_text )
 
     # go through remaining lines and add all starting with "-" to list
     for line in dep_text.splitlines():
-        if re.match(r'^-.*', line):
-            dep_li.append(line)
+        if re.match( r'^-.*', line ):
+            dep_li.append( line )
 
     # return list containing all dependency updates
     return dep_li
 
-def remove_duplicates(in_dep, in_sum):
+def remove_duplicates( in_dep, in_sum ):
     """
     Goes through the dependency list, checks to see if the dependency listed 
     already has a ticket capturing the work. 
@@ -166,21 +191,21 @@ def remove_duplicates(in_dep, in_sum):
 
     for dependency in in_dep:
         # add dependency to list
-        new_li.append(dependency)
+        new_li.append( dependency )
 
         # check the dependency for a match and get the dependency
-        check_str = re.search(r"^- `(.*)` Update", dependency)
+        check_str = re.search( r"^- `(.*)` Update", dependency )
         check_str = check_str.group(1)
         # go through summary list
         for summary in in_sum:
             if check_str in summary:
                 # if the dependency is in the summary remove it from the
                 # list and go to the next dependency
-                new_li.remove(dependency)
+                new_li.remove( dependency )
                 break
     return new_li
 
-def create_parent_ticket(conn, headers, project_key):
+def create_parent_ticket( conn, headers, project_key ):
     """
     POST API to create a parent ticket on the specified board
 
@@ -214,14 +239,14 @@ def create_parent_ticket(conn, headers, project_key):
     # check if we get OK response. If not exit with message
     if res.status != 201:
         error_message = "Got bad response when trying to create parent ticket. "
-        exit_with_error(error_message, data, res)
+        exit_with_error( error_message, data, res )
 
     readable_data = json.loads( data )
     # get the key from the response and return it
     parent_key = readable_data["key"]
     return parent_key
 
-def break_update_down(update):
+def break_update_down( update ):
     """
     Takes in a string with an update detailed and rearanges to the format we want
       "Update <dependency> from `<old version>` to `<new version>'
@@ -234,12 +259,12 @@ def break_update_down(update):
     """
 
     # seperate dependency into 2 groups
-    check_str = re.search(r"^- `(.*)` Update (from version `.*` to `.*`)", update)
+    check_str = re.search( r"^- `(.*)` Update (from version `.*` to `.*`)", update )
     # reformat line
     summary = "Update " + check_str.group(1) + " " + check_str.group(2)
     return summary
 
-def create_subtasks(update_list, parent_key, project_key):
+def create_subtasks( update_list, parent_key, project_key ):
     """
     For every element in update_list we create a ticket dictionary and add it
     to the list of elements. Then we create an overarching dictionary with one
@@ -259,7 +284,7 @@ def create_subtasks(update_list, parent_key, project_key):
 
     for update in update_list:
         # reformat the string to how we want the summary to look
-        summary_title = break_update_down(update)
+        summary_title = break_update_down( update )
 
         current = {
             "update": {},
@@ -277,15 +302,15 @@ def create_subtasks(update_list, parent_key, project_key):
             }
         }
         # add to list of updates
-        dict_update_list.append(current)
+        dict_update_list.append( current )
 
     # add header element reformat into json and return
     ticket_dict = {"issueUpdates": dict_update_list}
-    json_tickets = json.dumps(ticket_dict)
+    json_tickets = json.dumps( ticket_dict )
     return json_tickets
 
 
-def create_tickets(conn, headers, update_list, project_key):
+def create_tickets( conn, headers, update_list, project_key ):
     """
     POSTS API request to create all sub tasks.
 
@@ -298,24 +323,36 @@ def create_tickets(conn, headers, update_list, project_key):
     """
 
     # create and post parent ticket. Capture returned key
-    parent_key = create_parent_ticket(conn, headers, project_key)
+    parent_key = create_parent_ticket( conn, headers, project_key )
     # create subtasks and capture json object containing them
-    json_subtasks = create_subtasks(update_list, parent_key, project_key)
+    json_subtasks = create_subtasks( update_list, parent_key, project_key )
     # post subtasks capture response
     conn.request( "POST", "/rest/api/2/issue/bulk", json_subtasks, headers )
     res = conn.getresponse()
     data = res.read()
-    data = data.decode("utf-8")
+    data = data.decode( "utf-8" )
 
     # check if we get OK response. If not exit with message
     if res.status != 201:
         error_message = "Error Posting JIRA sub-tickets. Client sent back: "
-        exit_with_error(error_message, data, res)
+        exit_with_error( error_message, data, res )
 
-def decode_github_env(encoded_str):
-    decoded_str = encoded_str.replace('%25', '%')
-    decoded_str = decoded_str.replace('%0A', '\n')
-    decoded_str = decoded_str.replace('%0D', '\r')
+def decode_github_env( encoded_str ):
+    """
+    Used to decode the environment variable that is produced from 
+    .github/helpers/check-npm-dependencies.js
+    See workflow job: check-versions and create-issue for more information on the encoding. 
+
+    Args:
+      encoded_str (string): string holding specifically encoded environment variable.
+
+    Returns:
+      decoded_str (string): string holding decoded string value. 
+    """
+
+    decoded_str = encoded_str.replace( '%25', '%' )
+    decoded_str = decoded_str.replace( '%0A', '\n' )
+    decoded_str = decoded_str.replace( '%0D', '\r' )
     return decoded_str
 
 def main():
@@ -324,41 +361,46 @@ def main():
     JIRA. 
     """
 
+    # check for dependency environment variable
     try:
         dep_in = os.environ["ISSUE_BODY"]
     except KeyError:
-        sys.exit("Unable to get ISSUE_BODY")
+        sys.exit( "Unable to get ISSUE_BODY" )
 
-    dep_in = decode_github_env(dep_in)
+    # decode incoming string
+    dep_in = decode_github_env( dep_in )
 
+    # check for jira api key environment variable
     try:
         jira_api_key = os.environ["JIRA_API_KEY"]
     except KeyError:
-        sys.exit("Unable to get JIRA_API_KEY")
+        sys.exit( "Unable to get JIRA_API_KEY" )
 
-    conn = http.client.HTTPSConnection("citz-imb.atlassian.net")
-    #auth_string = "Basic" + JIRA_API_KEY
+    # establish https connection and necessary variables
+    conn = http.client.HTTPSConnection( "citz-imb.atlassian.net" )
+    auth_string = "Basic" + jira_api_key
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + jira_api_key
+        'Authorization': auth_string
     }
-    project_key = "TEST"
+    # define project key to post and read tickets from
+    project_key = "PIMS"
 
     # get the list of summaries from JIRA
-    summary_li = get_summary_list(conn, headers, project_key)
+    summary_li = get_summary_list( conn, headers, project_key )
     # get the list of dependencies from GitHub
-    dependency_li = parse_dependencies(dep_in)
+    dependency_li = parse_dependencies( dep_in )
 
     # check if dependency list is empty, if it is there are no tickets to create
-    if len(dependency_li) == 0:
-        sys.exit("No dependencies")
+    if len( dependency_li ) == 0:
+        sys.exit( "No dependencies" )
 
     # remove any dependencies that exist in both lists
-    final_li = remove_duplicates(dependency_li, summary_li)
+    final_li = remove_duplicates( dependency_li, summary_li )
 
-    if len(final_li) != 0 :
+    if len( final_li ) != 0 :
         # if there is a ticket to create post all tickets and capture response
-        create_tickets(conn, headers, final_li, project_key)
+        create_tickets( conn, headers, final_li, project_key )
 
 
 if __name__=="__main__":
