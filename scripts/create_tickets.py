@@ -384,7 +384,7 @@ def main():
         'Authorization': auth_string
     }
     # define project key to post and read tickets from
-    project_key = "PIMS"
+    project_key = "TEST"
 
     # get the list of summaries from JIRA
     summary_li = get_summary_list( conn, headers, project_key )
