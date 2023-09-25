@@ -296,7 +296,7 @@ def create_subtasks( update_list, parent_key, project_key ):
                     "key": parent_key
                 },
                 "issuetype": {
-                    "id": "10107" 
+                    "id": "10003" 
                 },
                 "summary": summary_title
             }
