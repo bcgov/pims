@@ -378,13 +378,13 @@ def main():
 
     # establish https connection and necessary variables
     conn = http.client.HTTPSConnection( "citz-imb.atlassian.net" )
-    auth_string = "Basic" + jira_api_key
+    auth_string = "Basic " + jira_api_key
     headers = {
         'Content-Type': 'application/json',
         'Authorization': auth_string
     }
     # define project key to post and read tickets from
-    project_key = "TEST"
+    project_key = "PIMS"
 
     # get the list of summaries from JIRA
     summary_li = get_summary_list( conn, headers, project_key )
