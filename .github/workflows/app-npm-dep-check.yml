@@ -121,4 +121,4 @@ jobs:
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
           ISSUE_BODY: ${{ env.ISSUE_BODY }}
         run: |
-          python3 .github/jira-api/create_tickets.py
+          python3 .github/helpers/jira-api/create_tickets.py
