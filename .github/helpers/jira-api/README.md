@@ -1,0 +1,28 @@
+# Jira API Helper Scripts
+
+## create_tickets.py
+
+### Overview
+
+This script was created with the following goal in mind: automatically create tickets in JIRA accurately depicting the dependency updates we would like to work on in a sprint. 
+As work progressed we refined the goal into the following steps (note that these are specific to PIMS desired outcomes for this work):
+1. Gather list of dependency updates
+  1. This list should only include minor and major updates
+  2. This list should only include current update information 
+2. Gather list of dependency update tickets from JIRA 
+  1. This list should contain only necessary information
+3. Remove items that appear on both lists
+4. Create tickets in PIMS backlog in JIRA
+
+### Service Account
+
+To not have this process dependant on a personal account we are using a service account to generate a JIRA API Key (more information below.) 
+This account's password needs to be updated every 90 days. That can be done using the following process: 
+STEPS GO HERE
+
+### Jira API key 
+
+More information on Jira API keys here: https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/
+
+The generated key was then stored in GitHub secrets so that it can be utilized as an environment variable.
+More information on Github secrets and how to use them here: https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions

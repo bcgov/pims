@@ -18,7 +18,10 @@ import os
 ##       Env variable to hold create_subtasks value for issue id
 ##        - has to be updated for each board depending on what version of subtasks they use
 ##       Check max results vs. total results in get_summary_list
-##
+##       Major vs minor tickets (priority levels)
+##       label ID (dependency/updtes)
+##        move to .github/helpers
+##         - add documentation for script there in README
 ## **********************************************************************
 
 def exit_with_error( error_message, data, res ):
@@ -229,7 +232,13 @@ def create_parent_ticket( conn, headers, project_key ):
             "summary": "Dependency Updates",
             "issuetype": {
                 "name": "Task"
-            }
+            },
+            "priority": {
+                "name": "Medium"
+            },
+            "labels": [
+                "DependencyUpdates"
+            ]
         }
     })
     # send post request to create parent ticket and capture response
@@ -300,6 +309,12 @@ def create_subtasks( update_list, parent_key, project_key ):
                 "issuetype": {
                     "id": "10003" 
                 },
+                "priority": {
+                    "name": "Medium"
+                },
+                "labels": [
+                    "DependencyUpdates"
+                ],
                 "summary": summary_title
             }
         }
