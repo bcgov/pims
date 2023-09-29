@@ -18,10 +18,7 @@ import os
 ##       Env variable to hold create_subtasks value for issue id
 ##        - has to be updated for each board depending on what version of subtasks they use
 ##       Check max results vs. total results in get_summary_list
-##       Major vs minor tickets (priority levels)
-##       label ID (dependency/updtes)
-##        move to .github/helpers
-##         - add documentation for script there in README
+##
 ## **********************************************************************
 
 def exit_with_error( error_message, data, res ):
@@ -84,7 +81,12 @@ def get_summary_list( conn, headers, project_key ):
 
     summary_li = []
     #specifies JIRA query to filter results and max results
-    jql_string = "project = " + project_key + " AND text ~ \"update\" AND status != Done"
+    jql_project = "project = " + project_key
+    jql_text = " AND text ~ \"update from version\""
+    jql_status = " AND status != Done"
+    jql_labels = " AND labels = DependencyUpdates"
+    jql_string = jql_project + jql_text + jql_status + jql_labels
+
     max_results = 100
 
     # will be used as the requesting json for specific ticket matches
@@ -181,7 +183,7 @@ def remove_patch_dep( in_str ):
     first_removal = dep_str[:start_patch.start()]
     second_removal = dep_str[end_patch.end():]
     final_str = first_removal + second_removal
-    
+
     return final_str
 
 
