@@ -394,7 +394,7 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
     json_subtasks_major = create_subtasks( "major", update_major, parent_key, project_key )
 
     # merge the dicrionaries
-    dict_update_list = json_subtasks_minor | json_subtasks_major
+    dict_update_list = json_subtasks_minor + json_subtasks_major
 
     # add header element reformat into json
     ticket_dict = {"issueUpdates": dict_update_list}
