@@ -358,7 +358,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
                     "key": parent_key
                 },
                 "issuetype": {
-                    "id": "10003" 
+                    "id": "10113" 
                 },
                 #"priority": {
                     #"name": priority_level
