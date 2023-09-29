@@ -360,9 +360,9 @@ def create_subtasks( version, update_list, parent_key, project_key ):
                 "issuetype": {
                     "id": "10003" 
                 },
-                "priority": {
-                    "name": priority_level
-                },
+                #"priority": {
+                    #"name": priority_level
+                #},
                 "labels": [
                     "DependencyUpdates"
                 ],
@@ -403,7 +403,7 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
 
     # check if we get OK response. If not exit with message
     if res.status != 201:
-        error_message = "Error Posting JIRA sub-tickets. Client sent back: "
+        error_message = "Error Posting JIRA sub-tickets 1. Client sent back: "
         exit_with_error( error_message, data, res )
 
     conn.request( "POST", "/rest/api/2/issue/bulk", json_subtasks_major, headers )
@@ -413,7 +413,7 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
 
     # check if we get OK response. If not exit with message
     if res.status != 201:
-        error_message = "Error Posting JIRA sub-tickets. Client sent back: "
+        error_message = "Error Posting JIRA sub-tickets 2. Client sent back: "
         exit_with_error( error_message, data, res )
 
 def decode_github_env( encoded_str ):
