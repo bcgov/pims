@@ -360,9 +360,9 @@ def create_subtasks( version, update_list, parent_key, project_key ):
                 "issuetype": {
                     "id": "10113" 
                 },
-                #"priority": {
-                    #"name": priority_level
-                #},
+                "priority": {
+                    "name": priority_level
+                },
                 "labels": [
                     "DependencyUpdates"
                 ],
