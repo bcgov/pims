@@ -8,6 +8,7 @@ import re
 import sys
 import os
 
+
 ## **********************************************************************
 ##
 ## This script pulls in relevant JIRA tickets and dependency updates
@@ -15,9 +16,9 @@ import os
 ##
 ## May want to add the following features in the future
 ##       Check for similar names like eslint/parser... vs eslint ect
-##       Env variable to hold create_subtasks value for issue id
-##        - has to be updated for each board depending on what version of subtasks they use
 ##       Check max results vs. total results in get_summary_list
+##       seperate into smaller files
+##       look into not using regex
 ##
 ## **********************************************************************
 
@@ -59,10 +60,20 @@ def parse_tickets( tickets_json ):
     for issue in issue_list:
         # extract the summary field form the json object
         summary = issue['fields']['summary']
+        # try to match ticket summary to this
+        sum_refined = re.search( r"Update (.*) from version .*", summary )
+        #if it does not match ignore it
+        if sum_refined is None:
+            continue
+
+        # if it matches extract the depenency name
+        sum_refined = sum_refined.group(1)
+
         # if the summary is not already in the list add it
-        if summary not in summary_li:
-            summary_li.append( summary )
-    # return the list of summaries
+        if sum_refined not in summary_li:
+            summary_li.append( sum_refined )
+
+    # return the list of dependencies from update tickets
     return summary_li
 
 def get_summary_list( conn, headers, project_key ):
@@ -237,6 +248,7 @@ def remove_duplicates( in_dep, in_sum ):
              in_dep that did not exist in in_sum
     """
 
+    # holders for returned list and tickets to only hold dependency name
     new_li = []
 
     for dependency in in_dep:
@@ -248,7 +260,7 @@ def remove_duplicates( in_dep, in_sum ):
         check_str = check_str.group(1)
         # go through summary list
         for summary in in_sum:
-            if check_str in summary:
+            if check_str == summary:
                 # if the dependency is in the summary remove it from the
                 # list and go to the next dependency
                 new_li.remove( dependency )
@@ -452,6 +464,12 @@ def main():
     except KeyError:
         sys.exit( "Unable to get JIRA_API_KEY" )
 
+    # check for jira board environment variable
+    try:
+        project_key = os.environ["JIRA_BOARD"]
+    except KeyError:
+        sys.exit( "Unable to get JIRA_board" )
+
     # establish https connection and necessary variables
     conn = http.client.HTTPSConnection( "citz-imb.atlassian.net" )
     auth_string = "Basic " + jira_api_key
@@ -459,8 +477,6 @@ def main():
         'Content-Type': 'application/json',
         'Authorization': auth_string
     }
-    # define project key to post and read tickets from
-    project_key = "TES"
 
     # get the list of summaries from JIRA
     summary_li = get_summary_list( conn, headers, project_key )

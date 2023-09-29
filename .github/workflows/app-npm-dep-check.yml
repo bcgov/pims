@@ -118,6 +118,7 @@ jobs:
 
       - name: execute py script
         env: 
+          JIRA_BOARD: "TES"
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }}
           ISSUE_BODY: ${{ env.ISSUE_BODY }}
         run: |
