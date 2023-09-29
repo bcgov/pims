@@ -325,13 +325,13 @@ def create_subtasks( version, update_list, parent_key, project_key ):
     parent element. Then it is converted to a JSON object. 
 
     Args: 
+      version (string): delegation between minor/major/patch update
       update_list (list[string]): list of dependencies to update
       parent_key (string): specifies what ticket to post under
       project_key (string): specifies what project to post tickets to
 
     Returns: 
-      json_tickets (json): JSON object contining sub tasks 
-                for all dependency updates.
+      dict_update_list (list): list contining sub tasks for specified dependency updates.
     """
 
     dict_update_list = []
@@ -372,10 +372,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
         # add to list of updates
         dict_update_list.append( current )
 
-    # add header element reformat into json and return
-    ticket_dict = {"issueUpdates": dict_update_list}
-    json_tickets = json.dumps( ticket_dict )
-    return json_tickets
+    return dict_update_list
 
 
 def create_tickets( conn, headers, update_minor, update_major, project_key ):
@@ -395,8 +392,16 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
     # create subtasks and capture json object containing them
     json_subtasks_minor = create_subtasks( "minor", update_minor, parent_key, project_key )
     json_subtasks_major = create_subtasks( "major", update_major, parent_key, project_key )
+
+    # merge the dicrionaries
+    dict_update_list = json_subtasks_minor | json_subtasks_major
+
+    # add header element reformat into json
+    ticket_dict = {"issueUpdates": dict_update_list}
+    json_tickets = json.dumps( ticket_dict )
+
     # post subtasks capture response
-    conn.request( "POST", "/rest/api/2/issue/bulk", json_subtasks_minor, headers )
+    conn.request( "POST", "/rest/api/2/issue/bulk", json_tickets, headers )
     res = conn.getresponse()
     data = res.read()
     data = data.decode( "utf-8" )
@@ -404,16 +409,6 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
     # check if we get OK response. If not exit with message
     if res.status != 201:
         error_message = "Error Posting JIRA sub-tickets 1. Client sent back: "
-        exit_with_error( error_message, data, res )
-
-    conn.request( "POST", "/rest/api/2/issue/bulk", json_subtasks_major, headers )
-    res = conn.getresponse()
-    data = res.read()
-    data = data.decode( "utf-8" )
-
-    # check if we get OK response. If not exit with message
-    if res.status != 201:
-        error_message = "Error Posting JIRA sub-tickets 2. Client sent back: "
         exit_with_error( error_message, data, res )
 
 def decode_github_env( encoded_str ):
@@ -478,7 +473,7 @@ def main():
     final_li_minor = remove_duplicates( dependency_li_minor, summary_li )
     final_li_major = remove_duplicates( dependency_li_major, summary_li )
 
-    if len( final_li_minor ) != 0 and len( final_li_major ) != 0:
+    if len( final_li_minor ) != 0 or len( final_li_major ) != 0:
         # if there is a ticket to create post all tickets and capture response
         create_tickets( conn, headers, final_li_minor, final_li_major, project_key )
 
