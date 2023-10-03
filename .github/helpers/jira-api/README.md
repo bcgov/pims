@@ -7,10 +7,10 @@
 This script was created with the following goal in mind: automatically create tickets in JIRA accurately depicting the dependency updates we would like to work on in a sprint. 
 As work progressed we refined the goal into the following steps (note that these are specific to PIMS desired outcomes for this work):
 1. Gather list of dependency updates
-  1. This list should only include minor and major updates
+  1.1. This list should only include minor and major updates
   2. This list should only include current update information 
 2. Gather list of dependency update tickets from JIRA 
-  1. This list should contain only necessary information
+  2.1. This list should contain only necessary information
 3. Remove items that appear on both lists
 4. Create tickets in PIMS backlog in JIRA
 
