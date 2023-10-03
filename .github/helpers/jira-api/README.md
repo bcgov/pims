@@ -26,3 +26,30 @@ More information on Jira API keys here: https://support.atlassian.com/atlassian-
 
 The generated key was then stored in GitHub secrets so that it can be utilized as an environment variable.
 More information on Github secrets and how to use them here: https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions
+
+### Dependency In
+
+This value is used as the source of dependencies that need to be updated. This is specific to the formatting found in the issues created in the PIMS repo. See: https://github.com/bcgov/PIMS/issues/1772 as an example. 
+
+### Project Key
+
+Signifies what board in JIRA to post to within the IMB space. 
+
+
+## Other scripts in this space
+
+### jira_con.py
+
+Used to connect to JIRA and to pull existing tickets
+
+### refine_dependency.py
+
+Used for refining strings and lists from existing tickets and dependency lists. 
+
+### create_and_post.py
+
+Used for finalizing the ticket API format and posting the parent and sub task tickets. 
+
+### errors.py
+
+Used for creating our own error class for handlind undesired API responses. 
