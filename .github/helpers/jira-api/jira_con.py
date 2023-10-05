@@ -16,7 +16,7 @@ def send_request(conn, req_type, where, payload, headers):
     Single source for sending requests to JIRA. Errors or 
     bad responses will not be handled here. 
     """
-    
+
     # define and capture request. return the result
     conn.request( req_type, where, payload, headers)
     res = conn.getresponse()

@@ -173,6 +173,6 @@ def parse_dependencies( level_flags, dep_text ):
         dep_text_major = refine_updates( dep_text, "major" )
         dep_li_major = refine_dependencies( dep_text_major )
 
-    # create a tuple of lists of dependency updates. 
+    # create a tuple of lists of dependency updates.
     dep_li = [dep_li_patch, dep_li_minor, dep_li_major]
     return dep_li
