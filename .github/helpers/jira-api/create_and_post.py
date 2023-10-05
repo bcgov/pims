@@ -154,6 +154,7 @@ def check_num_tickets( updates ):
           dependencies is <= 50. 
     """
 
+    warning_message = ""
     too_many_tickets = False
     patch, minor, major = updates
     sum_dependencies = len( patch ) + len( minor ) + len( major )
@@ -185,7 +186,8 @@ def check_num_tickets( updates ):
             minor = []
             major = major[:-remove_num]
 
-    print("Tickets were posted but " + warning_message + " were dropped.")
+        print("Tickets were posted but " + warning_message + " were dropped.")
+
     update = (patch, minor, major)
     return too_many_tickets, update
 
