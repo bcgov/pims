@@ -1,8 +1,7 @@
-""" Importing modules for parsing, json formatting, and errors """
+""" Importing modules for parsing, and json formatting"""
 import re
 import sys
 import json
-import error
 
 ###################################################################################################
 ##
@@ -30,7 +29,7 @@ def break_update_down( update ):
     return summary
 
 
-def create_parent_ticket( conn, headers, project_key, updates ):
+def create_parent_ticket( project_key, updates ):
     """
     POST API to create a parent ticket on the specified board
 
@@ -68,24 +67,8 @@ def create_parent_ticket( conn, headers, project_key, updates ):
             ]
         }
     })
-    # send post request to create parent ticket and capture response
-    conn.request( "POST", "/rest/api/2/issue/", parent_ticket, headers )
-    res = conn.getresponse()
-    data = res.read()
-    data = data.decode( "utf-8" )
 
-    # check if we get OK response. If not exit with message
-    if res.status != 201:
-        status = str( res.status )
-        reason = res.reason
-        message = "Got bad response when trying to create parent ticket.\n"
-        error_message = message + status + ": " + reason + "\n" + data
-        raise error.APIError( error_message )
-
-    readable_data = json.loads( data )
-    # get the key from the response and return it
-    parent_key = readable_data["key"]
-    return parent_key
+    return parent_ticket
 
 def create_subtasks( version, update_list, parent_key, project_key ):
     """
@@ -198,7 +181,7 @@ def check_num_tickets( updates ):
     update = (patch, minor, major)
     return too_many_tickets, update
 
-def create_tickets( conn, headers, updates, project_key ):
+def create_tickets( updates, project_key, parent_key):
     """
     POSTS API request to create parent ticket and all sub tasks.
 
@@ -212,8 +195,7 @@ def create_tickets( conn, headers, updates, project_key ):
 
     # break the updates back into 3 seperate lists
     update_patch, update_minor, update_major = updates
-    # create and post parent ticket. Capture returned key
-    parent_key = create_parent_ticket( conn, headers, project_key, updates )
+
     # create subtasks and capture json object containing them
     json_subtasks_patch = create_subtasks( "patch", update_patch, parent_key, project_key )
     json_subtasks_minor = create_subtasks( "minor", update_minor, parent_key, project_key )
@@ -226,16 +208,4 @@ def create_tickets( conn, headers, updates, project_key ):
     ticket_dict = {"issueUpdates": dict_update_list}
     json_tickets = json.dumps( ticket_dict )
 
-    # post subtasks capture response
-    conn.request( "POST", "/rest/api/2/issue/bulk", json_tickets, headers )
-    res = conn.getresponse()
-    data = res.read()
-    data = data.decode( "utf-8" )
-
-    # check if we get OK response. If not exit with message
-    if res.status != 201:
-        status = str( res.status )
-        reason = res.reason
-        message = "Error Posting JIRA sub-tickets. Client sent back: "
-        error_message = message + status + ": " + reason + "\n" + data
-        raise error.APIError( error_message )
+    return json_tickets

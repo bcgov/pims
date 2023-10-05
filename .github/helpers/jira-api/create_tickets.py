@@ -1,9 +1,7 @@
 """
-Modules providing HTTP connections, json formatting,
-regex, operating system, and system operations
+Modules providing HTTP connections, json formatting, regex, operating system, and system operations
 as well as: 
-Modules used to connect to JIRA API, refining dependency updates
-and posting tickets.
+Modules used to connect to JIRA API, refining dependency updates and posting tickets.
 """
 import http.client
 import sys
@@ -11,7 +9,7 @@ import os
 
 import jira_con
 import refine_dependency
-import create_and_post
+import refine_tickets
 
 ###################################################################################################
 ##
@@ -73,6 +71,54 @@ def get_env_variables():
 
     return ( level_flags, dep_in, jira_api_key, project_key )
 
+def refine_dep( level_flags, dep_in, summary_li ):
+    """
+    Used to parse the dependencies into format we want them
+
+    Args: 
+      level_flags (string): env variable setting what updates we are going to parse
+      dep_in (string): env variacle holding dependency list
+      summary_li (list[string]): list holding all ticket summaries we searched for
+
+    Returns: 
+      updates (tuple): tuple containing reformated lists of updates
+    """
+
+    # get the list of dependencies from GitHub
+    li_patch, li_minor, li_major = refine_dependency.parse_dependencies( level_flags, dep_in )
+
+    # remove any dependencies that exist in both lists
+    li_patch = refine_dependency.remove_duplicates( li_patch, summary_li )
+    li_minor = refine_dependency.remove_duplicates( li_minor, summary_li )
+    li_major = refine_dependency.remove_duplicates( li_major, summary_li )
+
+    updates = ( li_patch, li_minor, li_major, )
+    return updates
+
+def create_and_post_tickets( conn, headers, updates, project_key ):
+    """
+    This function captures the work necessary for creating, finalization, and posting tickets. 
+
+    Args: 
+      conn (HTTPSConnection): specifies where to make the connection
+      headers (string): specifies authentication to post to JIRA
+      updates (tuple(list)): a tuple of lists holding the dependency updates
+      project_key (string): a string representing the key for the board we want to post to
+    """
+
+    # check the number of tickets to post
+    too_many_tickets, updates = refine_tickets.check_num_tickets( updates )
+    # create parent ticket and post it
+    parent_ticket_json = refine_tickets.create_parent_ticket( project_key, updates )
+    parent_key = jira_con.post_parent_ticket( conn, headers, parent_ticket_json )
+    # create sub tasks and post them
+    subtask_json = refine_tickets.create_tickets( updates, project_key, parent_key )
+    jira_con.post_subtasks( conn, headers, subtask_json )
+
+    # if too many tickets flag was set allow the script to finish but then exit with an error
+    if too_many_tickets:
+        sys.exit("WARN: Too many tickets")
+
 def main():
     """ Works through the steps to refine dependency list and then create tickets in JIRA. """
 
@@ -87,27 +133,12 @@ def main():
 
     # get the list of summaries from JIRA
     summary_li = jira_con.get_summary_list( conn, headers, project_key )
-    # get the list of dependencies from GitHub
-    li_patch, li_minor, li_major = refine_dependency.parse_dependencies( level_flags, dep_in )
 
-    # check if dependency lists are empty -> there are no tickets to create
-    sum_dependencies = len( li_patch ) + len( li_major ) + len( li_major )
-    if sum_dependencies == 0:
-        sys.exit( "No dependencies" )
+    # refine dependencies
+    updates = refine_dep( level_flags, dep_in, summary_li )
 
-    # remove any dependencies that exist in both lists
-    li_patch = refine_dependency.remove_duplicates( li_patch, summary_li )
-    li_minor = refine_dependency.remove_duplicates( li_minor, summary_li )
-    li_major = refine_dependency.remove_duplicates( li_major, summary_li )
-
-    # if there is a ticket to create post all tickets and capture response
-    updates = ( li_patch, li_minor, li_major, )
-    too_many_tickets, updates = create_and_post.check_num_tickets( updates )
-    create_and_post.create_tickets( conn, headers, updates, project_key )
-
-    # if too many tickets flag was set allow the script to finish but then exit with an error
-    if too_many_tickets:
-        sys.exit("WARN: Too many tickets")
+    # create and post all tickets
+    create_and_post_tickets( conn, headers, updates, project_key )
 
 
 if __name__=="__main__":

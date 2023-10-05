@@ -60,6 +60,64 @@ def parse_tickets( tickets_json ):
     # return the list of dependencies from update tickets
     return summary_li
 
+def post_subtasks( conn, headers, json_tickets ):
+    """
+    This function will take in a json object holding all subtask tickets to be created, 
+    post them and handle any unexpected responses. 
+
+    Args: 
+      conn (HTTPSConnection): specifies where to make the connection
+      headers (string): specifies authentication to post to JIRA
+      json_tickets (json): holds the json object with sub task ticket data 
+
+    """
+
+    # post subtasks capture response
+    conn.request( "POST", "/rest/api/2/issue/bulk", json_tickets, headers )
+    res = conn.getresponse()
+    data = res.read()
+    data = data.decode( "utf-8" )
+
+    # check if we get OK response. If not exit with message
+    if res.status != 201:
+        status = str( res.status )
+        reason = res.reason
+        message = "Error Posting JIRA sub-tickets. Client sent back: "
+        error_message = message + status + ": " + reason + "\n" + data
+        raise error.APIError( error_message )
+
+def post_parent_ticket(conn, headers, parent_ticket):
+    """
+    Used for posting the parent ticket json to the jira board
+
+    Args: 
+      conn (HTTPSConnection): specifies where to make the connection
+      headers (string): specifies authentication to post to JIRA
+      parent_ticket (json): holds the json object with parent ticket data
+
+    Returns: 
+      parent_key (string): Parent ticket key - used to create sub tickets
+    """
+
+    # send post request to create parent ticket and capture response
+    conn.request( "POST", "/rest/api/2/issue/", parent_ticket, headers )
+    res = conn.getresponse()
+    data = res.read()
+    data = data.decode( "utf-8" )
+
+    # check if we get OK response. If not exit with message
+    if res.status != 201:
+        status = str( res.status )
+        reason = res.reason
+        message = "Got bad response when trying to create parent ticket.\n"
+        error_message = message + status + ": " + reason + "\n" + data
+        raise error.APIError( error_message )
+
+    readable_data = json.loads( data )
+    # get the key from the response and return it
+    parent_key = readable_data["key"]
+    return parent_key
+
 def get_summary_list( conn, headers, project_key ):
     """
     Make an API POST request for current JIRA tickets narrowing down the search by a JQL 
