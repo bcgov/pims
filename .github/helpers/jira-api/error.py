@@ -1,12 +1,12 @@
 "Import for system actions. Allowing us to exit gracefully."
 import sys
 
-## **********************************************************************
+###################################################################################################
 ##
 ## This script hosts the error we will throw (raise) when a bad response
 ## is hit from a http connection.
 ##
-## **********************************************************************
+###################################################################################################
 
 class APIError(Exception):
     "raised when we hit an API error"

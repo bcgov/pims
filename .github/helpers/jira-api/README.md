@@ -7,16 +7,16 @@
 This script was created with the following goal in mind: automatically create tickets in JIRA accurately depicting the dependency updates we would like to work on in a sprint. 
 As work progressed we refined the goal into the following steps (note that these are specific to PIMS desired outcomes for this work):
 1. Gather list of dependency updates
-  1.1. This list should only include minor and major updates
-  2. This list should only include current update information 
+    - This list should only include minor and major updates
+    - This list should only include current update information 
 2. Gather list of dependency update tickets from JIRA 
-  2.1. This list should contain only necessary information
+    - This list should contain only necessary information
 3. Remove items that appear on both lists
 4. Create tickets in PIMS backlog in JIRA
 
 ### Service Account
 
-To not have this process dependant on a personal account we are using a service account to generate a JIRA API Key (more information below.) 
+To not have this process dependent on a personal account we are using a service account to generate a JIRA API Key (more information below.) 
 This account's password needs to be updated every 90 days. That can be done using the following process: 
 STEPS GO HERE
 
@@ -34,6 +34,16 @@ This value is used as the source of dependencies that need to be updated. This i
 ### Project Key
 
 Signifies what board in JIRA to post to within the IMB space. 
+
+### Level Flags
+
+String that holds the key words of dependencies we would like to update. Any arrangement of the following will be accepted and read: 
+
+- PATCH
+- MINOR
+- MAJOR
+
+If something other than the above is entered it will not be processed. Each key word should be seperated by a space.
 
 
 ## Other scripts in this space

@@ -1,14 +1,15 @@
-"""Importing modules for parsing, json formatting, and errors"""
+""" Importing modules for parsing, json formatting, and errors """
 import re
+import sys
 import json
 import error
 
-## **********************************************************************
+###################################################################################################
 ##
-## This script hosts functions that are used to reformat given strings,
-## create specific format and post parent and subtask tickets.
+## This script hosts functions that are used to reformat given strings, create specific format and
+## post parent and subtask tickets.
 ##
-## **********************************************************************
+###################################################################################################
 
 def break_update_down( update ):
     """
@@ -81,13 +82,14 @@ def create_parent_ticket( conn, headers, project_key ):
 
 def create_subtasks( version, update_list, parent_key, project_key ):
     """
-    For every element in update_list we create a ticket dictionary and add it
-    to the list of elements. Then we create an overarching dictionary with one
-    parent element. Then it is converted to a JSON object. 
+    For every element in update_list we create a ticket dictionary and add it to the list of
+    elements. Then we create an overarching dictionary with one parent element. Then it is 
+    converted to a JSON object. 
 
     Args: 
       version (string): delegation between minor/major/patch update
-      update_list (list[string], list[string]): list of tuples of dependencies to update and update string
+      update_list (list[string], list[string]): list of tuples containing dependencies to update
+          and update string
       parent_key (string): specifies what ticket to post under
       project_key (string): specifies what project to post tickets to
 
@@ -98,6 +100,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
     dict_update_list = []
     priority_level = ""
 
+    # set priority level based on what type of dependency we are working through
     if version == "minor":
         priority_level = "Medium"
     elif version == "major":
@@ -108,7 +111,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
     for update in update_list:
         # reformat the string to how we want the summary to look
         summary_title = break_update_down( update[0] )
-        description = "To update please run the following command:\n'" + update[1] + "'"
+        description = "To update please run the following command:\n\n' " + update[1] + " '"
 
         current = {
             "update": {},
@@ -137,9 +140,58 @@ def create_subtasks( version, update_list, parent_key, project_key ):
 
     return dict_update_list
 
+def check_num_tickets( updates ):
+    """
+    This method takes in the three lists (as one tuple), checks how many dependencies are listed, 
+    and then will return the lists and the flag we have set. 
+
+    Args:
+      updates (tuple): Holds the three dependency update lists. 
+
+    Returns:
+      too_many_tickets (bool): flag set to catch if we have more than 50 tickets to create.
+      updates (tuple): Holds the three dependency lists with the assurance that the number of 
+          dependencies is <= 50. 
+    """
+
+    too_many_tickets = False
+    patch, minor, major = updates
+    sum_dependencies = len( patch ) + len( minor ) + len( major )
+
+    # Check if there are any tickets left after removing duplicates or if there are too many
+    if sum_dependencies == 0:
+        sys.exit( "No unique tickets to create" )
+    elif sum_dependencies > 50:
+        # if there are too many tickets warn user
+        too_many_tickets = True
+        print("WARN: More than 50 tickets to create. ")
+        remove_num = sum_dependencies - 50
+
+        # if there are enough patch updates to clear 50
+        if len( patch ) >= remove_num:
+            warning_message = "some patch"
+            patch = patch[:-remove_num]
+        # if there are enough patch + minor updates to clear 50
+        elif len(patch) + len(minor) >= remove_num:
+            warning_message = "all patch and some minor"
+            remove_num = remove_num - len(patch)
+            patch = []
+            minor = minor[:-remove_num]
+        # if we have to clear some major updates as well.
+        else:
+            warning_message = "all patch, all minor, and some major"
+            remove_num = remove_num - (len(patch) + len(minor))
+            patch = []
+            minor = []
+            major = major[:-remove_num]
+
+    print("Tickets were posted but " + warning_message + " were dropped.")
+    update = (patch, minor, major)
+    return too_many_tickets, update
+
 def create_tickets( conn, headers, updates, project_key ):
     """
-    POSTS API request to create all sub tasks.
+    POSTS API request to create parent ticket and all sub tasks.
 
     Args:
       conn (HTTPSConnection): specifies where to make the connection

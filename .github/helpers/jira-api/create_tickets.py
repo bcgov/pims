@@ -13,10 +13,10 @@ import jira_con
 import refine_dependency
 import create_and_post
 
-## **********************************************************************
+###################################################################################################
 ##
-## This script pulls in relevant JIRA tickets and dependency updates
-## to create new tickets to cover weekly dependency updates.
+## This script pulls in relevant JIRA tickets and dependency updates to create new tickets to cover
+## weekly dependency updates.
 ##
 ## It uses the following scripts to do the heavy lifting of the group:
 ##     - jira_con.py: used for connection to JIRA
@@ -26,16 +26,23 @@ import create_and_post
 ##         catch bad results from API calls
 ##
 ## May want to add the following features in the future
-##       Check for similar names like eslint/parser... vs eslint ect
 ##       Check max results vs. total results in get_summary_list
-##       look into not using regex
+##       Send 2 request when over 50 updates instead of trunkating.
+##       look into not using regex.
+##       Reformat such that the scripts ONLY do the following:
+##         - jira_con.py: used for connection to JIRA
+##         - refine_dependency: used for refining strings and lists of dependencies
+##         - create_and_post.py: used for creating the tickets to create
+##             - rename to refine_tickets.py
+##         - errors.py (not used in this script) our own error class to
+##             catch bad results from API calls
 ##
-## **********************************************************************
+###################################################################################################
 
 def get_env_variables():
     """
-    This method does the work for setting environment variables to be used in
-    this script. We will also catch and report any errors as they arise. 
+    This method does the work for setting environment variables to be used in this script. We will
+    also catch and report any errors as they arise. 
     """
     # check for dependency environment variable
     try:
@@ -67,12 +74,8 @@ def get_env_variables():
     return ( level_flags, dep_in, jira_api_key, project_key )
 
 def main():
-    """
-    Works through the steps to refine dependency list and then create tickets in
-    JIRA. 
-    """
+    """ Works through the steps to refine dependency list and then create tickets in JIRA. """
 
-    too_many_tickets = False
     warning_message = ""
     level_flags, dep_in, jira_api_key, project_key = get_env_variables()
 
@@ -99,38 +102,9 @@ def main():
     minor = refine_dependency.remove_duplicates( li_minor, summary_li )
     major = refine_dependency.remove_duplicates( li_major, summary_li )
 
-    # Check if there are any tickets left after removing duplicates or if there are too many
-    sum_dependencies = len( patch ) + len( minor ) + len( major )
-
-    if sum_dependencies == 0:
-        sys.exit( "No unique tickets to create" )
-
-    elif sum_dependencies > 50:
-        # if there are too many tickets warn user
-        too_many_tickets = True
-        print("WARN: More than 50 tickets to create. ")
-        remove_num = sum_dependencies - 50
-
-        # if there are enough patch updates to clear 50 
-        if len( patch ) >= remove_num:
-            warning_message = "some patch"
-            patch = patch[:-remove_num]
-        # if there are enough patch + minor updates to clear 50
-        elif len(patch) + len(minor) >= remove_num:
-            warning_message = "all patch and some minor"
-            remove_num = remove_num - len(patch)
-            patch = []
-            minor = minor[:-remove_num]
-        # if we have to clear some major updates as well. 
-        else:
-            warning_message = "all patch, all minor, and some major"
-            remove_num = remove_num - (len(patch) + len(minor))
-            patch = []
-            minor = []
-            major = major[:-remove_num]
-
     # if there is a ticket to create post all tickets and capture response
     updates = ( patch, minor, major, )
+    too_many_tickets, updates = create_and_post.check_num_tickets( updates )
     create_and_post.create_tickets( conn, headers, updates, project_key )
 
     # if too many tickets flag was set allow the script to finish but then exit with an error

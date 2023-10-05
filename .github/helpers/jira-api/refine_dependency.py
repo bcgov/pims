@@ -4,18 +4,17 @@ May look into how we can accomplish this without regex in the future
 """
 import re
 
-## **********************************************************************
+###################################################################################################
 ##
-## This script hosts functions that are used to decode env variables,
-## remove matching elements from lists, and refine and parse the
-## dependency list.
+## This script hosts functions that are used to decode env variables, remove matching elements from
+## lists, and refine and parse the dependency list.
 ##
-## **********************************************************************
+###################################################################################################
 
 def decode_github_env( encoded_str ):
     """
     Used to decode the environment variable that is produced from 
-    .github/helpers/check-npm-dependencies.js
+     .github/helpers/check-npm-dependencies.js
     See workflow job: check-versions and create-issue for more information on the encoding. 
 
     Args:
@@ -38,12 +37,13 @@ def remove_duplicates( in_dep, in_sum ):
       - If no we leave the dependency in the list and move to the next
 
     Args: 
-      in_dep (list[string], list[datring]): a list containing tuples of all dependency updates and update strings
+      in_dep (list[string], list[datring]): a list containing tuples of dependency updates
+          and update strings
       in_sum (list[string]): a list containing all ticket summaries
 
     Returns: 
       new_li (list[string]): a list containing only elements that exist from
-             in_dep that did not exist in in_sum
+          in_dep that did not exist in in_sum
     """
 
     # holders for returned list and tickets to only hold dependency name
