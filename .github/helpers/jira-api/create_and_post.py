@@ -152,7 +152,7 @@ def create_tickets( conn, headers, update_patch, update_minor, update_major, pro
     # create and post parent ticket. Capture returned key
     parent_key = create_parent_ticket( conn, headers, project_key )
     # create subtasks and capture json object containing them
-    json_subtasks_patch = create_subtasks( "minor", update_patch, parent_key, project_key )
+    json_subtasks_patch = create_subtasks( "patch", update_patch, parent_key, project_key )
     json_subtasks_minor = create_subtasks( "minor", update_minor, parent_key, project_key )
     json_subtasks_major = create_subtasks( "major", update_major, parent_key, project_key )
 
