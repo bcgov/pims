@@ -72,6 +72,8 @@ def main():
     JIRA. 
     """
 
+    too_many_tickets = False
+    warning_message = ""
     level_flags, dep_in, jira_api_key, project_key = get_env_variables()
 
     # establish https connection and necessary variables
@@ -97,14 +99,44 @@ def main():
     minor = refine_dependency.remove_duplicates( li_minor, summary_li )
     major = refine_dependency.remove_duplicates( li_major, summary_li )
 
-    # Check if there are any tickets left after removing duplicates
+    # Check if there are any tickets left after removing duplicates or if there are too many
     sum_dependencies = len( patch ) + len( minor ) + len( major )
+
     if sum_dependencies == 0:
         sys.exit( "No unique tickets to create" )
-    else:
-        # if there is a ticket to create post all tickets and capture response
-        updates = ( patch, minor, major, )
-        create_and_post.create_tickets( conn, headers, updates, project_key )
+
+    elif sum_dependencies > 50:
+        # if there are too many tickets warn user
+        too_many_tickets = True
+        print("WARN: More than 50 tickets to create. ")
+        remove_num = sum_dependencies - 50
+
+        # if there are enough patch updates to clear 50 
+        if len( patch ) >= remove_num:
+            warning_message = "some patch"
+            patch = patch[:-remove_num]
+        # if there are enough patch + minor updates to clear 50
+        elif len(patch) + len(minor) >= remove_num:
+            warning_message = "all patch and some minor"
+            remove_num = remove_num - len(patch)
+            patch = []
+            minor = minor[:-remove_num]
+        # if we have to clear some major updates as well. 
+        else:
+            warning_message = "all patch, all minor, and some major"
+            remove_num = remove_num - (len(patch) + len(minor))
+            patch = []
+            minor = []
+            major = major[:-remove_num]
+
+    # if there is a ticket to create post all tickets and capture response
+    updates = ( patch, minor, major, )
+    create_and_post.create_tickets( conn, headers, updates, project_key )
+
+    # if too many tickets flag was set allow the script to finish but then exit with an error
+    if too_many_tickets:
+        warn = "WARN: Tickets posted but " + warning_message + " updates have been dropped."
+        sys.exit( warn )
 
 
 if __name__=="__main__":
