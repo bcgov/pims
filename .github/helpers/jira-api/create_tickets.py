@@ -22,7 +22,7 @@ import create_and_post
 ##     - jira_con.py: used for connection to JIRA
 ##     - refine_dependency: used for refining strings and lists
 ##     - create_and_post.py: used for creating the tickets to create
-##     - errors.py (not used in this script) our own error class to 
+##     - errors.py (not used in this script) our own error class to
 ##         catch bad results from API calls
 ##
 ## May want to add the following features in the future
@@ -58,7 +58,13 @@ def get_env_variables():
     except KeyError:
         sys.exit( "Unable to get JIRA_board" )
 
-    return ( dep_in, jira_api_key, project_key )
+    # check for level flags
+    try:
+        level_flags = os.environ["LEVEL_FLAGS"]
+    except KeyError:
+        sys.exit( "Unable to get level flags" )
+
+    return ( level_flags, dep_in, jira_api_key, project_key )
 
 def main():
     """
@@ -66,7 +72,7 @@ def main():
     JIRA. 
     """
 
-    dep_in, jira_api_key, project_key = get_env_variables()
+    level_flags, dep_in, jira_api_key, project_key = get_env_variables()
 
     # establish https connection and necessary variables
     conn = http.client.HTTPSConnection( "citz-imb.atlassian.net" )
@@ -79,21 +85,25 @@ def main():
     # get the list of summaries from JIRA
     summary_li = jira_con.get_summary_list( conn, headers, project_key )
     # get the list of dependencies from GitHub
-    dependency_li_minor, dependency_li_major = refine_dependency.parse_dependencies( dep_in )
+    li_patch, li_minor, li_major = refine_dependency.parse_dependencies( level_flags, dep_in )
 
     # check if dependency lists are empty -> there are no tickets to create
-    if len( dependency_li_minor ) == 0 and len( dependency_li_major ) == 0:
+    sum_dependencies = len( li_patch ) + len( li_major ) + len( li_major )
+    if sum_dependencies == 0:
         sys.exit( "No dependencies" )
 
     # remove any dependencies that exist in both lists
-    final_li_minor = refine_dependency.remove_duplicates( dependency_li_minor, summary_li )
-    final_li_major = refine_dependency.remove_duplicates( dependency_li_major, summary_li )
+    patch = refine_dependency.remove_duplicates( li_patch, summary_li )
+    minor = refine_dependency.remove_duplicates( li_minor, summary_li )
+    major = refine_dependency.remove_duplicates( li_major, summary_li )
 
-    if len( final_li_minor ) == 0 and len( final_li_major ) == 0:
+    # Check if there are any tickets left after removing duplicates
+    sum_dependencies = len( patch ) + len( minor ) + len( major )
+    if sum_dependencies == 0:
         sys.exit( "No unique tickets to create" )
     else:
         # if there is a ticket to create post all tickets and capture response
-        create_and_post.create_tickets( conn, headers, final_li_minor, final_li_major, project_key )
+        create_and_post.create_tickets( conn, headers, patch, minor, major, project_key )
 
 
 if __name__=="__main__":

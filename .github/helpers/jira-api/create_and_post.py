@@ -87,7 +87,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
 
     Args: 
       version (string): delegation between minor/major/patch update
-      update_list (list[string]): list of dependencies to update
+      update_list (list[string], list[string]): list of tuples of dependencies to update and update string
       parent_key (string): specifies what ticket to post under
       project_key (string): specifies what project to post tickets to
 
@@ -107,7 +107,8 @@ def create_subtasks( version, update_list, parent_key, project_key ):
 
     for update in update_list:
         # reformat the string to how we want the summary to look
-        summary_title = break_update_down( update )
+        summary_title = break_update_down( update[0] )
+        description = "To update please run the following command:\n'" + update[1] + "'"
 
         current = {
             "update": {},
@@ -127,7 +128,8 @@ def create_subtasks( version, update_list, parent_key, project_key ):
                 "labels": [
                     "DependencyUpdates"
                 ],
-                "summary": summary_title
+                "summary": summary_title,
+                "description": description
             }
         }
         # add to list of updates
@@ -135,7 +137,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
 
     return dict_update_list
 
-def create_tickets( conn, headers, update_minor, update_major, project_key ):
+def create_tickets( conn, headers, update_patch, update_minor, update_major, project_key ):
     """
     POSTS API request to create all sub tasks.
 
@@ -150,11 +152,12 @@ def create_tickets( conn, headers, update_minor, update_major, project_key ):
     # create and post parent ticket. Capture returned key
     parent_key = create_parent_ticket( conn, headers, project_key )
     # create subtasks and capture json object containing them
+    json_subtasks_patch = create_subtasks( "minor", update_patch, parent_key, project_key )
     json_subtasks_minor = create_subtasks( "minor", update_minor, parent_key, project_key )
     json_subtasks_major = create_subtasks( "major", update_major, parent_key, project_key )
 
     # merge the dicrionaries
-    dict_update_list = json_subtasks_minor + json_subtasks_major
+    dict_update_list = json_subtasks_patch + json_subtasks_minor + json_subtasks_major
 
     # add header element reformat into json
     ticket_dict = {"issueUpdates": dict_update_list}

@@ -38,8 +38,7 @@ def remove_duplicates( in_dep, in_sum ):
       - If no we leave the dependency in the list and move to the next
 
     Args: 
-      in_dep (list[string]): a list containing all dependency updates
-      in_dev_dep ()
+      in_dep (list[string], list[datring]): a list containing tuples of all dependency updates and update strings
       in_sum (list[string]): a list containing all ticket summaries
 
     Returns: 
@@ -50,9 +49,11 @@ def remove_duplicates( in_dep, in_sum ):
     # holders for returned list and tickets to only hold dependency name
     new_li = []
 
-    for dependency in in_dep:
-        # add dependency to list
-        new_li.append( dependency )
+    for ele in in_dep:
+        # get the first elemet of the tuple which is the dependency update
+        dependency = ele[0]
+        # add tuple to list
+        new_li.append( ele )
 
         # check the dependency for a match and get the dependency
         check_str = re.search( r"^- `(.*)` Update", dependency )
@@ -60,9 +61,9 @@ def remove_duplicates( in_dep, in_sum ):
         # go through summary list
         for summary in in_sum:
             if check_str == summary:
-                # if the dependency is in the summary remove it from the
-                # list and go to the next dependency
-                new_li.remove( dependency )
+                # if the dependency is in the summary remove the tuple from the
+                # list and go to the next tuple
+                new_li.remove( ele )
                 break
     return new_li
 
@@ -101,7 +102,41 @@ def refine_updates( in_dep_str, refine_word ):
     refined = refined_str + refined_str_dev
     return refined
 
-def parse_dependencies( dep_text ):
+def refine_dependencies( string_in ):
+    """
+    This method takes in a string, reformats it into a list then goes through the list to 
+    first add desired lines into a new list, then goes through that list to couple the update
+    and update string into a tuple, which is added to a new list and returned. 
+
+    Args:
+      string_in (string): string value holding information on dependency updates
+
+    Returns:
+      new_li (list): a list of tuples with the following form ('dependency_update', 'update_string')
+    """
+
+    new_li = []
+    temp_li = []
+    # split incoming string into a list on the newline character
+    li_in = string_in.splitlines()
+
+    # go through list and if the line starts with "npm" or "- `" add it to a new list
+    for line in li_in:
+        check_str = line[:3]
+        if check_str == "npm" or check_str == "- `":
+            temp_li.append(line)
+
+    # for every line in the refined list create a tuple containing the line and the
+    # line immediatly following.
+    for index, line in enumerate(temp_li):
+        if line[:3] == "- `":
+            new_ele = ( line, temp_li[index + 1] )
+            new_li.append( new_ele )
+
+    return new_li
+
+
+def parse_dependencies( level_flags, dep_text ):
     """
     This takes in a dependency update text (very specific format see 
     https://github.com/bcgov/PIMS/issues/1706#issue-1899122308)
@@ -109,27 +144,35 @@ def parse_dependencies( dep_text ):
     then pulls all update strings into a list.
 
     Args: 
+      level_flags (string): env variable definind the levels of dependencies we want to check for
       dep_text (string): dependency update string
 
     Returns: 
       dep_li (list): list with string elements of dependency updates
     """
 
+    dep_li_patch = []
     dep_li_minor = []
     dep_li_major = []
 
-    dep_text_minor = refine_updates( dep_text, "minor" )
-    dep_text_major = refine_updates( dep_text, "major" )
+    # split env variables into a list
+    li_levels = level_flags.split()
 
-    # go through remaining dependencies add all starting with "-" to list
-    for line in dep_text_minor.splitlines():
-        if re.match( r'^-.*', line ):
-            dep_li_minor.append( line )
+    # if PATCH is listed in env flag grab that section of the report and then refine it
+    if "PATCH" in li_levels:
+        dep_text_patch = refine_updates( dep_text, "patch" )
+        dep_li_patch = refine_dependencies( dep_text_patch )
 
-    # go through remaining major dependencies and add all starting with "-" to list
-    for line in dep_text_major.splitlines():
-        if re.match( r'^-.*', line ):
-            dep_li_major.append( line )
+    # if MINOR is listed in env flag grab that section of the report and then refine it
+    if "MINOR" in li_levels:
+        dep_text_minor = refine_updates( dep_text, "minor" )
+        dep_li_minor = refine_dependencies( dep_text_minor )
 
-    # return list containing all dependency updates
-    return [dep_li_minor, dep_li_major]
+    # if MAJOR is listed in env flag grab that section of the report and then refine it
+    if "MAJOR" in li_levels:
+        dep_text_major = refine_updates( dep_text, "major" )
+        dep_li_major = refine_dependencies( dep_text_major )
+
+    # create a tuple of lists of dependency updates. 
+    dep_li = [dep_li_patch, dep_li_minor, dep_li_major]
+    return dep_li
