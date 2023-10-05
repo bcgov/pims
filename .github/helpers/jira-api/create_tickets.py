@@ -103,7 +103,8 @@ def main():
         sys.exit( "No unique tickets to create" )
     else:
         # if there is a ticket to create post all tickets and capture response
-        create_and_post.create_tickets( conn, headers, patch, minor, major, project_key )
+        updates = ( patch, minor, major, )
+        create_and_post.create_tickets( conn, headers, updates, project_key )
 
 
 if __name__=="__main__":

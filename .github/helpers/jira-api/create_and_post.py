@@ -137,18 +137,20 @@ def create_subtasks( version, update_list, parent_key, project_key ):
 
     return dict_update_list
 
-def create_tickets( conn, headers, update_patch, update_minor, update_major, project_key ):
+def create_tickets( conn, headers, updates, project_key ):
     """
     POSTS API request to create all sub tasks.
 
     Args:
       conn (HTTPSConnection): specifies where to make the connection
       headers (string): specifies authentication to post to JIRA
-      update_list (list): list of sub tasks to transform into tickets
+      updates (tuple): tuple of three lists, each containing sub tasks to transform into tickets
       project_key (string): specifies wha project to post to
 
     """
 
+    # break the updates back into 3 seperate lists
+    update_patch, update_minor, update_major = updates
     # create and post parent ticket. Capture returned key
     parent_key = create_parent_ticket( conn, headers, project_key )
     # create subtasks and capture json object containing them
@@ -174,5 +176,5 @@ def create_tickets( conn, headers, update_patch, update_minor, update_major, pro
         status = str( res.status )
         reason = res.reason
         message = "Error Posting JIRA sub-tickets. Client sent back: "
-        error_message = message + status + ": " + reason + "\n"
+        error_message = message + status + ": " + reason + "\n" + data
         raise error.APIError( error_message )
