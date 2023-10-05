@@ -46,7 +46,7 @@ def create_parent_ticket( conn, headers, project_key, updates ):
 
     patch = "- " + str(len(updates[0])) + " Patch updates\n"
     minor = "- " + str(len(updates[1])) + " Minor updates\n"
-    major = "- " + str(len(updates[2])) + " Major updates\n"
+    major = "- " + str(len(updates[2])) + " Major updates\n\n"
     description = "Currently we have:\n" + patch + minor + major + "to update"
 
     # json object to create parent ticket
