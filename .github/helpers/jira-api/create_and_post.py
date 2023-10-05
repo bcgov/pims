@@ -71,7 +71,7 @@ def create_parent_ticket( conn, headers, project_key ):
         status = str( res.status )
         reason = res.reason
         message = "Got bad response when trying to create parent ticket.\n"
-        error_message = message + status + ": " + reason + "\n"
+        error_message = message + status + ": " + reason + "\n" + data
         raise error.APIError( error_message )
 
     readable_data = json.loads( data )
@@ -173,6 +173,6 @@ def create_tickets( conn, headers, update_patch, update_minor, update_major, pro
     if res.status != 201:
         status = str( res.status )
         reason = res.reason
-        message = "Error Posting JIRA sub-tickets 1. Client sent back: "
+        message = "Error Posting JIRA sub-tickets. Client sent back: "
         error_message = message + status + ": " + reason + "\n"
         raise error.APIError( error_message )
