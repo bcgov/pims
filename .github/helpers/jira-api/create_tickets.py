@@ -76,15 +76,13 @@ def get_env_variables():
 def main():
     """ Works through the steps to refine dependency list and then create tickets in JIRA. """
 
-    warning_message = ""
     level_flags, dep_in, jira_api_key, project_key = get_env_variables()
 
     # establish https connection and necessary variables
     conn = http.client.HTTPSConnection( "citz-imb.atlassian.net" )
-    auth_string = "Basic " + jira_api_key
     headers = {
         'Content-Type': 'application/json',
-        'Authorization': auth_string
+        'Authorization': "Basic " + jira_api_key
     }
 
     # get the list of summaries from JIRA
@@ -98,19 +96,18 @@ def main():
         sys.exit( "No dependencies" )
 
     # remove any dependencies that exist in both lists
-    patch = refine_dependency.remove_duplicates( li_patch, summary_li )
-    minor = refine_dependency.remove_duplicates( li_minor, summary_li )
-    major = refine_dependency.remove_duplicates( li_major, summary_li )
+    li_patch = refine_dependency.remove_duplicates( li_patch, summary_li )
+    li_minor = refine_dependency.remove_duplicates( li_minor, summary_li )
+    li_major = refine_dependency.remove_duplicates( li_major, summary_li )
 
     # if there is a ticket to create post all tickets and capture response
-    updates = ( patch, minor, major, )
+    updates = ( li_patch, li_minor, li_major, )
     too_many_tickets, updates = create_and_post.check_num_tickets( updates )
     create_and_post.create_tickets( conn, headers, updates, project_key )
 
     # if too many tickets flag was set allow the script to finish but then exit with an error
     if too_many_tickets:
-        warn = "WARN: Tickets posted but " + warning_message + " updates have been dropped."
-        sys.exit( warn )
+        sys.exit()
 
 
 if __name__=="__main__":
