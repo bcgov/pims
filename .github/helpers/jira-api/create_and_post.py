@@ -186,7 +186,7 @@ def check_num_tickets( updates ):
             minor = []
             major = major[:-remove_num]
 
-        print("Tickets were posted but " + warning_message + " were dropped.")
+        print("WARN: Tickets were posted but " + warning_message + " were dropped.")
 
     update = (patch, minor, major)
     return too_many_tickets, update

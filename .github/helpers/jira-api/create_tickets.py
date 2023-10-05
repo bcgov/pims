@@ -107,7 +107,7 @@ def main():
 
     # if too many tickets flag was set allow the script to finish but then exit with an error
     if too_many_tickets:
-        sys.exit()
+        sys.exit("WARN: Too many tickets")
 
 
 if __name__=="__main__":
