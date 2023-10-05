@@ -118,7 +118,7 @@ jobs:
 
       - name: execute py script
         env: 
-          LEVEL_FLAGS: "MINOR MAJOR" # used to determine what updates to post
+          LEVEL_FLAGS: "PATCH MINOR MAJOR" # used to determine what updates to post
           JIRA_BOARD: "TES" # sets what JIRA board to post and pull from
           JIRA_API_KEY: ${{ secrets.JIRA_API_KEY }} # key used to access JIRA API
           ISSUE_BODY: ${{ env.ISSUE_BODY }} # dependency update list
