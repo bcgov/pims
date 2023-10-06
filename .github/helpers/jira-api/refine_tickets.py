@@ -43,10 +43,12 @@ def create_parent_ticket( project_key, updates ):
       parent_key (string): captures key of created ticket 
     """
 
-    patch = "- " + str(len(updates[0])) + " Patch updates\n"
-    minor = "- " + str(len(updates[1])) + " Minor updates\n"
-    major = "- " + str(len(updates[2])) + " Major updates\n\n"
-    description = "Currently we have:\n" + patch + minor + major + "to update"
+    description = "Currently we have:\n" + \
+        "- " + str(len(updates[0])) + " Patch updates\n" + \
+        "- " + str(len(updates[1])) + " Minor updates\n" + \
+        "- " + str(len(updates[2])) + " Major updates\n\n" + \
+        "To update please navigate to the frontend\n```" + \
+        " cd frontend\n\nand run command listed in ticket"
 
     # json object to create parent ticket
     parent_ticket = json.dumps({
@@ -176,7 +178,7 @@ def check_num_tickets( updates ):
             minor = []
             major = major[:-remove_num]
 
-        print("WARN: Tickets were posted but " + warning_message + " were dropped.")
+        print("WARN: Tickets were posted but " + warning_message + " updates were dropped.")
 
     update = (patch, minor, major)
     return too_many_tickets, update

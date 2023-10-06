@@ -27,13 +27,6 @@ import refine_tickets
 ##       Check max results vs. total results in get_summary_list
 ##       Send 2 request when over 50 updates instead of trunkating.
 ##       look into not using regex.
-##       Reformat such that the scripts ONLY do the following:
-##         - jira_con.py: used for connection to JIRA
-##         - refine_dependency: used for refining strings and lists of dependencies
-##         - create_and_post.py: used for creating the tickets to create
-##             - rename to refine_tickets.py
-##         - errors.py (not used in this script) our own error class to
-##             catch bad results from API calls
 ##
 ###################################################################################################
 
