@@ -2,6 +2,7 @@
 import re
 import sys
 import json
+import datetime
 
 ###################################################################################################
 ##
@@ -43,6 +44,11 @@ def create_parent_ticket( project_key, updates ):
       parent_key (string): captures key of created ticket 
     """
 
+    # get current day and format as Mon DD, YYYY
+    today = datetime.date.today()
+    today = today.strftime("%b %d, %Y")
+
+    # format the description of the parent ticket
     description = "Currently we have:\n" + \
         "- " + str(len(updates[0])) + " Patch updates\n" + \
         "- " + str(len(updates[1])) + " Minor updates\n" + \
@@ -56,7 +62,7 @@ def create_parent_ticket( project_key, updates ):
             "project": {
                 "key": project_key
             },
-            "summary": "Dependency Updates",
+            "summary": "Dependency Updates " + str(today),
             "description": description,
             "issuetype": {
                 "name": "Task"

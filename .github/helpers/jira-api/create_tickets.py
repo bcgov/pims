@@ -27,6 +27,8 @@ import refine_tickets
 ##       Check max results vs. total results in get_summary_list
 ##       Send 2 request when over 50 updates instead of trunkating.
 ##       look into not using regex.
+##       set up env file for environment variables (level flags ect.)
+##       *** diagram for security and priv.
 ##
 ###################################################################################################
 
