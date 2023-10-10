@@ -34,7 +34,7 @@ This value is used as the source of dependencies that need to be updated. This i
 ### Project Key
 
 Signifies what board in JIRA to post to within the IMB space. 
-
+Example: PIMS
 ### Level Flags
 
 String that holds the key words of dependencies we would like to update. Any arrangement of the following will be accepted and read: 
