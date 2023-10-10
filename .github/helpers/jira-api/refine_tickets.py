@@ -4,6 +4,8 @@ import sys
 import json
 import datetime
 
+JIRA_SUBTASK = "10003"
+
 ###################################################################################################
 ##
 ## This script hosts functions that are used to reformat given strings, create specific format and
@@ -121,7 +123,7 @@ def create_subtasks( version, update_list, parent_key, project_key ):
                     "key": parent_key
                 },
                 "issuetype": {
-                    "id": "10113" 
+                    "id": JIRA_SUBTASK
                 },
                 "priority": {
                     "name": priority_level
