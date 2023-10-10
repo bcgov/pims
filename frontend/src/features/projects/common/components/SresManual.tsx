@@ -14,7 +14,7 @@ const SresManual: React.FunctionComponent<ISresManualProps> = ({
 }: ISresManualProps) => {
   const link =
     clickUrl ??
-    'https://intranet.gov.bc.ca/assets/intranet/mtics/real-property/sres/process_manual_for_the_surplus_properties_program_-_feb_2020_-_version_2.pdf?';
+    'https://intranet.gov.bc.ca/assets/intranet/mtics/real-property/who-we-are/branch-sres/process_manual_for_the_surplus_properties_program_-_feb_2020_-_version_2.pdf';
   return (
     <div className="SresManual" onClick={() => window.open(link, '_blank')}>
       <div>

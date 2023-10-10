@@ -28,6 +28,12 @@ interface IRowProps {
 const Row = (props: IRowProps) => {
   const { row, index } = props;
 
+  const getPercentage = (numerator: string, denominator: string) => {
+    const value = (parseInt(numerator) / parseInt(denominator)) * 100;
+    // If it's a whole number, just return it. Otherwise, crop to 2 decimal places
+    return value % 1 === 0 ? value : value.toFixed(2);
+  };
+
   return (
     <TableRow
       sx={{
@@ -35,10 +41,7 @@ const Row = (props: IRowProps) => {
       }}
     >
       <TableCell align="center" sx={{ width: '7em' }}>
-        {`${
-          (parseInt(row.interestFractionNumerator) / parseInt(row.interestFractionDenominator)) *
-          100
-        }%`}
+        {`${getPercentage(row.interestFractionNumerator, row.interestFractionDenominator)}%`}
       </TableCell>
       <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
         <Box sx={{ margin: 1 }}>
