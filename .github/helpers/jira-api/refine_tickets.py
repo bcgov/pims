@@ -37,8 +37,6 @@ def create_parent_ticket( project_key, updates ):
     POST API to create a parent ticket on the specified board
 
     Args:
-      conn (HTTPSConnection): specifies where to make the connection
-      headers (string): supplies authentication to connect to JIRA
       project_key (string): defines project key of JIRA board we want to post to
       updates (tuple(lists)): tuple of the three update lists
 
