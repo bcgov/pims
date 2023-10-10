@@ -56,9 +56,9 @@ Used to connect to JIRA and to pull existing tickets
 
 Used for refining strings and lists from existing tickets and dependency lists. 
 
-### create_and_post.py
+### refine_tickets.py
 
-Used for finalizing the ticket API format and posting the parent and sub task tickets. 
+Used for finalizing the ticket API format for the parent and sub task tickets. 
 
 ### errors.py
 

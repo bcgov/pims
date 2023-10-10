@@ -14,7 +14,17 @@ import error
 def send_request(conn, req_type, where, payload, headers):
     """
     Single source for sending requests to JIRA. Errors or 
-    bad responses will not be handled here. 
+    bad responses will not be handled here.
+
+    Args: 
+      conn (HTTPSConnection): specifies where to make the connection
+      req_type (string): Specifies what request type we are making (POST, GET, PUT, ect.)
+      where (string): the request URI url. The provided url must be an absolute path
+      payload (string): body of request in json format 
+      headers (string): specifies authentication to post to JIRA
+
+    Returns:
+      res (HTTPResponse): response from the server.
     """
 
     # define and capture request. return the result

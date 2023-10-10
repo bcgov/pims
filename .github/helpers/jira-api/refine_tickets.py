@@ -175,18 +175,20 @@ def check_num_tickets( updates ):
         # if there are enough patch + minor updates to clear 50
         elif len(patch) + len(minor) >= remove_num:
             warning_message = "all patch and some minor"
-            remove_num = remove_num - len(patch)
+            remove_num_temp = remove_num - len(patch)
             patch = []
-            minor = minor[:-remove_num]
+            minor = minor[:-remove_num_temp]
         # if we have to clear some major updates as well.
         else:
             warning_message = "all patch, all minor, and some major"
-            remove_num = remove_num - (len(patch) + len(minor))
+            remove_num_temp = remove_num - (len(patch) + len(minor))
             patch = []
             minor = []
-            major = major[:-remove_num]
+            major = major[:-remove_num_temp]
 
-        print("WARN: Tickets were posted but " + warning_message + " updates were dropped.")
+        print("WARN: Tickets were posted but " \
+              + str(remove_num) + warning_message + \
+              " updates were dropped.")
 
     update = (patch, minor, major)
     return too_many_tickets, update
